@@ -121,8 +121,205 @@ $("startBtn").onclick=startGame;$("introStart").onclick=startGame;$("replayBtn")
 let handTask=null,stream=null,video=$("camera"),pinching=false,dragging=null,lastHandX=0,lastHandY=0;const handPointer=$("handPointer"),dropPointer=$("dropPointer");
 async function enableCamera(){try{initAudio();$("cameraBox").style.display="flex";$("gestureStatus").textContent="Memuatkan pengesan tangan…";if(!window.Hands){await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js");await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js")}const hands=new Hands({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});hands.onResults(onHands);stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:640,height:480},audio:false});video.srcObject=stream;await video.play();const pump=async()=>{if(stream&&video.readyState>=2)await hands.send({image:video});if(stream)requestAnimationFrame(pump)};pump();$("gestureStatus").textContent="Kamera aktif! Bulatan merah ialah penunjuk jari. Cubit untuk ambil kad."}catch(e){$("gestureStatus").textContent="Kamera tak dapat diaktifkan. Benarkan akses kamera atau gunakan tetikus.";console.error(e)}}
 function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.crossOrigin="anonymous";s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
-function onHands(results){if(!results.multiHandLandmarks||!results.multiHandLandmarks.length){$("gestureStatus").textContent="Tunjukkan tangan ke kamera.";handPointer.style.left="-100px";dropPointer.style.display="none";if(pinching)releasePinch();return}const lm=results.multiHandLandmarks[0],thumb=lm[4],tip=lm[8],dist=Math.hypot(thumb.x-tip.x,thumb.y-tip.y),pinch=dist<.055,x=(1-tip.x)*window.innerWidth,y=tip.y*window.innerHeight;lastHandX=x;lastHandY=y;handPointer.style.left=x+"px";handPointer.style.top=y+"px";handPointer.classList.toggle("pinching",pinch);if(pinch&&!pinching){pinching=true;const target=document.elementFromPoint(x,y),card=target&&target.closest(".card");if(card&&!card.classList.contains("used")&&!answered){dragging=card;dragging.style.outline="4px solid #ffd45c";sfx("pick");$("gestureStatus").textContent="Kad dipegang! Kekalkan cubitan dan gerakkan bulatan ke kotak padanan."}else $("gestureStatus").textContent="Cubit tepat pada kad untuk mengambilnya."}if(pinch&&dragging){dragging.style.position="fixed";dragging.style.zIndex="99";dragging.style.pointerEvents="none";dragging.style.left=(x-dragging.offsetWidth/2)+"px";dragging.style.top=(y-dragging.offsetHeight/2)+"px";dropPointer.style.display="block";dropPointer.style.left=x+"px";dropPointer.style.top=y+"px";document.querySelectorAll(".zone").forEach(z=>z.classList.remove("hover-target"));const t=document.elementFromPoint(x,y),z=t&&t.closest(".zone");if(z&&z.dataset.type===dragging.dataset.type)z.classList.add("hover-target")}if(!pinch&&pinching)releasePinch();if(!dragging)$("gestureStatus").textContent=pinch?"🤏 Cubitan dikesan.":"🔴 Bulatan merah ikut hujung jari telunjuk. Dekatkan ibu jari dan telunjuk untuk cubit."}
-function releasePinch(){pinching=false;handPointer.classList.remove("pinching");dropPointer.style.display="none";document.querySelectorAll(".zone").forEach(z=>z.classList.remove("hover-target"));if(dragging){const el=dragging;el.style.position="";el.style.zIndex="";el.style.pointerEvents="";el.style.left="";el.style.top="";el.style.outline="";const target=document.elementFromPoint(lastHandX,lastHandY),zone=target&&target.closest(".zone");if(zone&&zone.dataset.type===el.dataset.type){placeCard(el,el.dataset.type);$("gestureStatus").textContent="Kad diletakkan! Pilih kad seterusnya atau tekan Semak Padanan."}else $("gestureStatus").textContent="Lepaskan cubitan di atas kotak padanan yang sepadan.";dragging=null}}
+
+let pinchState = false;
+let pinchStartFrames = 0;
+let releaseFrames = 0;
+let smoothX = null;
+let smoothY = null;
+
+const PINCH_START = 0.045;
+const PINCH_END = 0.075;
+const FRAMES_TO_GRAB = 3;
+const FRAMES_TO_RELEASE = 5;
+const SMOOTHING = 0.35;
+
+function onHands(results) {
+  if (!results.multiHandLandmarks ||
+      !results.multiHandLandmarks.length) {
+    pinchStartFrames = 0;
+    releaseFrames = 0;
+    handPointer.style.left = "-100px";
+    dropPointer.style.display = "none";
+
+    // Jangan lepaskan kad hanya kerana satu bingkai
+    // kamera gagal mengesan tangan.
+    return;
+  }
+
+  const lm = results.multiHandLandmarks[0];
+  const thumb = lm[4];
+  const tip = lm[8];
+
+  const dist = Math.hypot(
+    thumb.x - tip.x,
+    thumb.y - tip.y
+  );
+
+  // Lancarkan pergerakan penunjuk.
+  const rawX = (1 - tip.x) * window.innerWidth;
+  const rawY = tip.y * window.innerHeight;
+
+  if (smoothX === null) {
+    smoothX = rawX;
+    smoothY = rawY;
+  } else {
+    smoothX += (rawX - smoothX) * SMOOTHING;
+    smoothY += (rawY - smoothY) * SMOOTHING;
+  }
+
+  const x = smoothX;
+  const y = smoothY;
+
+  lastHandX = x;
+  lastHandY = y;
+
+  handPointer.style.left = x + "px";
+  handPointer.style.top = y + "px";
+
+  // Cubit perlu dikesan beberapa bingkai berturut-turut.
+  if (!pinchState) {
+    if (dist < PINCH_START) {
+      pinchStartFrames++;
+    } else {
+      pinchStartFrames = 0;
+    }
+
+    if (pinchStartFrames >= FRAMES_TO_GRAB) {
+      pinchState = true;
+      pinching = true;
+      releaseFrames = 0;
+
+      const target = document.elementFromPoint(x, y);
+      const card = target && target.closest(".card");
+
+      if (card &&
+          !card.classList.contains("used") &&
+          !answered) {
+        dragging = card;
+
+        // Simpan kedudukan asal kad.
+        const rect = card.getBoundingClientRect();
+        dragging.dataset.originalLeft = rect.left;
+        dragging.dataset.originalTop = rect.top;
+
+        dragging.style.position = "fixed";
+        dragging.style.width = rect.width + "px";
+        dragging.style.height = rect.height + "px";
+        dragging.style.margin = "0";
+        dragging.style.zIndex = "9997";
+        dragging.style.pointerEvents = "none";
+        dragging.style.outline = "4px solid #ffd45c";
+
+        sfx("pick");
+        gestureStatus.textContent =
+          "Kad dipegang! Gerakkan tangan ke kotak yang sepadan.";
+      } else {
+        gestureStatus.textContent =
+          "Cubit pada kad untuk mengambilnya.";
+      }
+    }
+  } else {
+    // Ambang untuk melepaskan lebih besar daripada
+    // ambang mengambil kad supaya kurang berkelip.
+    if (dist > PINCH_END) {
+      releaseFrames++;
+    } else {
+      releaseFrames = 0;
+    }
+
+    if (releaseFrames >= FRAMES_TO_RELEASE) {
+      releasePinch();
+      pinchStartFrames = 0;
+      return;
+    }
+  }
+
+  handPointer.classList.toggle("pinching", pinchState);
+
+  if (pinchState && dragging) {
+    dragging.style.left =
+      (x - dragging.offsetWidth / 2) + "px";
+    dragging.style.top =
+      (y - dragging.offsetHeight / 2) + "px";
+
+    dropPointer.style.display = "block";
+    dropPointer.style.left = x + "px";
+    dropPointer.style.top = y + "px";
+
+    document.querySelectorAll(".zone").forEach(z => {
+      z.classList.remove("hover-target");
+    });
+
+    const target = document.elementFromPoint(x, y);
+    const zone = target && target.closest(".zone");
+
+    if (zone && zone.dataset.type === dragging.dataset.type) {
+      zone.classList.add("hover-target");
+    }
+  }
+}
+
+function releasePinch() {
+  pinchState = false;
+  pinching = false;
+  pinchStartFrames = 0;
+  releaseFrames = 0;
+
+  handPointer.classList.remove("pinching");
+  dropPointer.style.display = "none";
+
+  document.querySelectorAll(".zone").forEach(z => {
+    z.classList.remove("hover-target");
+  });
+
+  if (!dragging) return;
+
+  const el = dragging;
+  const x = lastHandX;
+  const y = lastHandY;
+
+  // Semak sasaran ketika kad masih berada pada
+  // kedudukan yang dibawa oleh penunjuk.
+  const target = document.elementFromPoint(x, y);
+  const zone = target && target.closest(".zone");
+
+  // Pulihkan gaya kad supaya susun atur asal kekal.
+  el.style.pointerEvents = "none";
+
+  if (zone && zone.dataset.type === el.dataset.type) {
+    el.style.position = "";
+    el.style.left = "";
+    el.style.top = "";
+    el.style.width = "";
+    el.style.height = "";
+    el.style.margin = "";
+    el.style.zIndex = "";
+    el.style.pointerEvents = "";
+    el.style.outline = "";
+
+    placeCard(el, el.dataset.type);
+
+    gestureStatus.textContent =
+      "Kad berjaya diletakkan! ✨";
+  } else {
+    el.style.position = "";
+    el.style.left = "";
+    el.style.top = "";
+    el.style.width = "";
+    el.style.height = "";
+    el.style.margin = "";
+    el.style.zIndex = "";
+    el.style.pointerEvents = "";
+    el.style.outline = "";
+
+    gestureStatus.textContent =
+      "Bawa kad ke kotak yang sepadan sebelum melepaskan cubitan.";
+  }
+
+  dragging = null;
+}
+
 $("cameraBtn").onclick=enableCamera;$("stopCameraBtn").onclick=()=>{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;$("cameraBox").style.display="none";$("gestureStatus").textContent="Kamera ditutup.";handPointer.style.left="-100px";dropPointer.style.display="none";if(dragging)releasePinch()};
 window.addEventListener("beforeunload",()=>{stopMusic();if(stream)stream.getTracks().forEach(t=>t.stop())});
 </script>
