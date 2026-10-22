@@ -36,13 +36,13 @@ footer{text-align:center;padding:12px;color:#356b42;font-weight:700}
 </head>
 <body>
 <div class="top">
-  <div class="brand"><img src="assets/kancil.png" alt="Sang Kancil"><div><h1>🐘 Misi Padankan Hikmah</h1><p class="subtitle">Ekspedisi Rimba Ajaib • Game 3</p></div></div>
+  <div class="brand"><img src="kancil.png" alt="Sang Kancil"><div><h1>🐘 Misi Padankan Hikmah</h1><p class="subtitle">Ekspedisi Rimba Ajaib • Game 3</p></div></div>
   <div class="pill">💎 Kristal Hikmah: <span id="crystals">0</span></div>
 </div>
 <main>
   <section class="hero">
     <div class="panel">
-      <div class="story"><img id="heroAnimal" src="assets/kerbau.png" alt="Gajah rimba"><div><h2>Selamat datang, Wira Rimba!</h2><p>Bantu haiwan rimba mencari <b>situasi, peribahasa dan pengajaran</b> yang sepadan. Lengkapkan 5 misi untuk membina Jambatan Hikmah Ajaib!</p></div></div>
+      <div class="story"><img id="heroAnimal" src="kerbau.png" alt="Gajah rimba"><div><h2>Selamat datang, Wira Rimba!</h2><p>Bantu haiwan rimba mencari <b>situasi, peribahasa dan pengajaran</b> yang sepadan. Lengkapkan 5 misi untuk membina Jambatan Hikmah Ajaib!</p></div></div>
       <div class="controls">
         <button class="btn primary" id="startBtn">🌿 Mula Misi</button>
         <button class="btn secondary" id="soundBtn">🔊 Bunyi: Hidup</button>
@@ -52,7 +52,7 @@ footer{text-align:center;padding:12px;color:#356b42;font-weight:700}
       <div class="stats"><div class="stat">⭐ Mata<b id="score">0</b></div><div class="stat">🧩 Misi<b><span id="qnum">0</span>/5</b></div><div class="stat">🌉 Bahagian jambatan<b id="bridge">0/5</b></div></div>
     </div>
     <div class="panel" style="background:linear-gradient(150deg,#e1ffd0,#c9f4ff)">
-      <div class="story"><img src="assets/monyet.png" alt="Monyet"><div><h2>Kuasa tangan ajaib ✨</h2><p><b>Dengan tetikus:</b> seret kad ke ruang padanan.<br><b>Dengan kamera:</b> cubit untuk pegang kad, gerakkan tangan, lepaskan untuk letak kad.</p></div></div>
+      <div class="story"><img src="monyet.png" alt="Monyet"><div><h2>Kuasa tangan ajaib ✨</h2><p><b>Dengan tetikus:</b> seret kad ke ruang padanan.<br><b>Dengan kamera:</b> cubit untuk pegang kad, gerakkan tangan, lepaskan untuk letak kad.</p></div></div>
       <div style="margin-top:12px;background:#fff8cf;border-radius:16px;padding:12px;font-weight:800">🎵 Muzik latar ceria dimainkan selepas kau menekan “Mula Misi”.</div>
       <p class="note">Petua: kamera memerlukan kebenaran browser dan sambungan internet untuk memuatkan pengesan tangan. Tetikus sentiasa boleh digunakan sebagai pilihan.</p>
     </div>
@@ -62,7 +62,7 @@ footer{text-align:center;padding:12px;color:#356b42;font-weight:700}
     <div class="missionHead"><h2 id="missionTitle">Misi 1: Bantu haiwan rimba!</h2><div class="pill">⏳ Tiada tekanan masa</div></div>
     <div class="progress"><span id="progressBar"></span></div>
     <div class="task">
-      <div class="scene"><img id="sceneImg" src="assets/kerbau.png" alt="Situasi misi"><div><h3 id="sceneTitle">Situasi</h3><p id="sceneText">Tekan “Mula Misi” untuk bermula.</p></div></div>
+      <div class="scene"><img id="sceneImg" src="kerbau.png" alt="Situasi misi"><div><h3 id="sceneTitle">Situasi</h3><p id="sceneText">Tekan “Mula Misi” untuk bermula.</p></div></div>
       <div class="dropzones">
         <div class="zone" data-type="proverb"><h3>📜 Peribahasa</h3><div class="slot" id="slot-proverb">Letakkan kad peribahasa di sini</div></div>
         <div class="zone" data-type="lesson"><h3>💡 Pengajaran</h3><div class="slot" id="slot-lesson">Letakkan kad pengajaran di sini</div></div>
@@ -74,18 +74,18 @@ footer{text-align:center;padding:12px;color:#356b42;font-weight:700}
 <footer>🌿 Belajar peribahasa sambil bermain • Misi Padankan Hikmah 🌿</footer>
 <div id="handPointer" aria-hidden="true"></div><div id="dropPointer" aria-hidden="true"></div>
 <div class="overlay" id="intro">
-  <div class="modal"><img src="assets/kancil.png" alt="Sang Kancil"><h2>Jom bina Jambatan Hikmah! 🌉</h2><p>Lengkapkan 5 misi. Padankan peribahasa dan pengajaran yang betul dengan situasi haiwan rimba. Kumpulkan kristal dan buka jambatan ajaib!</p><button class="btn primary" id="introStart">🚀 Mulakan Pengembaraan</button></div>
+  <div class="modal"><img src="kancil.png" alt="Sang Kancil"><h2>Jom bina Jambatan Hikmah! 🌉</h2><p>Lengkapkan 5 misi. Padankan peribahasa dan pengajaran yang betul dengan situasi haiwan rimba. Kumpulkan kristal dan buka jambatan ajaib!</p><button class="btn primary" id="introStart">🚀 Mulakan Pengembaraan</button></div>
 </div>
 <div class="overlay" id="finish" style="display:none">
-  <div class="modal"><img src="assets/semut_belalang.png" alt="Semut dan belalang"><h2>Hebat, Wira Rimba! 🎉</h2><p id="finalText">Kau telah menyelesaikan semua misi.</p><div style="font-size:2rem;margin:10px">🏆 🌟 💎</div><button class="btn primary" id="replayBtn">🔁 Main Semula</button></div>
+  <div class="modal"><img src="semut_belalang.png" alt="Semut dan belalang"><h2>Hebat, Wira Rimba! 🎉</h2><p id="finalText">Kau telah menyelesaikan semua misi.</p><div style="font-size:2rem;margin:10px">🏆 🌟 💎</div><button class="btn primary" id="replayBtn">🔁 Main Semula</button></div>
 </div>
 <script>
 const questions = [
- {scene:"Gajah membantu arnab yang terjatuh dan membawa bakul makanannya.",img:"assets/kerbau.png",proverb:"Berat sama dipikul, ringan sama dijinjing.",lesson:"Kita hendaklah saling membantu ketika orang lain dalam kesusahan."},
- {scene:"Semut mengumpulkan makanan sedikit demi sedikit sebelum musim hujan.",img:"assets/semut_belalang.png",proverb:"Sedikit-sedikit, lama-lama menjadi bukit.",lesson:"Usaha yang berterusan akan menghasilkan kejayaan."},
- {scene:"Sang Kancil berfikir dahulu sebelum memilih jalan yang selamat untuk rakan-rakannya.",img:"assets/kancil.png",proverb:"Ukur baju di badan sendiri.",lesson:"Kita perlu membuat keputusan mengikut kemampuan dan keadaan."},
- {scene:"Monyet bercakap benar kepada rakan-rakannya walaupun telah melakukan kesilapan.",img:"assets/monyet.png",proverb:"Berani kerana benar.",lesson:"Kita hendaklah bercakap benar dan bertanggungjawab atas perbuatan sendiri."},
- {scene:"Haiwan rimba berkongsi makanan dengan rakan yang belum makan.",img:"assets/buaya.png",proverb:"Bagai isi dengan kuku.",lesson:"Kita hendaklah hidup bersatu padu dan menjaga hubungan baik."}
+ {scene:"Gajah membantu arnab yang terjatuh dan membawa bakul makanannya.",img:"kerbau.png",proverb:"Berat sama dipikul, ringan sama dijinjing.",lesson:"Kita hendaklah saling membantu ketika orang lain dalam kesusahan."},
+ {scene:"Semut mengumpulkan makanan sedikit demi sedikit sebelum musim hujan.",img:"semut_belalang.png",proverb:"Sedikit-sedikit, lama-lama menjadi bukit.",lesson:"Usaha yang berterusan akan menghasilkan kejayaan."},
+ {scene:"Sang Kancil berfikir dahulu sebelum memilih jalan yang selamat untuk rakan-rakannya.",img:"kancil.png",proverb:"Ukur baju di badan sendiri.",lesson:"Kita perlu membuat keputusan mengikut kemampuan dan keadaan."},
+ {scene:"Monyet bercakap benar kepada rakan-rakannya walaupun telah melakukan kesilapan.",img:"monyet.png",proverb:"Berani kerana benar.",lesson:"Kita hendaklah bercakap benar dan bertanggungjawab atas perbuatan sendiri."},
+ {scene:"Haiwan rimba berkongsi makanan dengan rakan yang belum makan.",img:"buaya.png",proverb:"Bagai isi dengan kuku.",lesson:"Kita hendaklah hidup bersatu padu dan menjaga hubungan baik."}
 ];
 const distractorProverbs=["Bagai mencurah air ke daun keladi.","Seperti katak di bawah tempurung.","Bagai aur dengan tebing.","Nasi sudah menjadi bubur."];
 const distractorLessons=["Kita tidak perlu mendengar nasihat sesiapa.","Kita boleh membazir kerana makanan sentiasa ada.","Kita harus menyalahkan orang lain.","Kita tidak perlu merancang masa hadapan."];
