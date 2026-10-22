@@ -382,7 +382,7 @@ function releasePinch() {
   dragging = null;
 }
 
-$("cameraBtn").onclick=enableCamera;$("stopCameraBtn").onclick=()=>{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;$("cameraBox").style.display="none";const gestureStatus = $("gestureStatus");.textContent="Kamera ditutup.";handPointer.style.left="-100px";dropPointer.style.display="none";if(dragging)releasePinch()};
+$("cameraBtn").onclick=enableCamera;$("stopCameraBtn").onclick=()=>{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;$("cameraBox").style.display="none";const gestureStatus =$("gestureStatus").textContent = "Kamera ditutup.";handPointer.style.left="-100px";dropPointer.style.display="none";if(dragging)releasePinch()};
 window.addEventListener("beforeunload",()=>{stopMusic();if(stream)stream.getTracks().forEach(t=>t.stop())});
 </script>
 </body>
