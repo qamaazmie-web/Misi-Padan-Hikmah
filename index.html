@@ -117,22 +117,41 @@ if(ok){answered=true;score+=20;crystals++;$("slot-proverb").classList.add("good"
 else{$("feedback").textContent="Belum tepat! Kad salah kembali ke tempat asal. Cuba pilih jawapan lain. 💪";$("feedback").className="feedback oops";sfx("bad");["proverb","lesson"].forEach(type=>{if(chosen[type]&&chosen[type].dataset.correct!=="yes"){chosen[type].classList.remove("used");chosen[type]=null;$("slot-"+type).textContent=type==="proverb"?"Letakkan kad peribahasa di sini":"Letakkan kad pengajaran di sini";$("slot-"+type).className="slot"}})}
 updateStats()};
 $("nextBtn").onclick=()=>{if(index<questions.length-1){index++;loadQuestion()}else{stopMusic();sfx("win");$("finish").style.display="flex";$("finalText").textContent=`Kau mengumpul ${score} mata dan ${crystals} daripada 5 Kristal Hikmah. Teruskan berlatih peribahasa!`;started=false}};
-$("startBtn").onclick=startGame;$("introStart").onclick=startGame;$("replayBtn").onclick=startGame;
-let handTask=null,stream=null,video=$("camera"),pinching=false,dragging=null,lastHandX=0,lastHandY=0;const handPointer=$("handPointer"),dropPointer=$("dropPointer");
+
+let handTask = null;
+let stream = null;
+let video = $("camera");
+let pinching = false;
+let dragging = null;
+let lastHandX = 0;
+let lastHandY = 0;
+
+const handPointer = $("handPointer");
+const dropPointer = $("dropPointer");
+const gestureStatus = $("gestureStatus");
 
 async function enableCamera() {
   try {
     initAudio();
+
     $("cameraBox").style.display = "flex";
-    $("gestureStatus").textContent = "Memuatkan pengesan tangan…";
+    gestureStatus.textContent = "Memuatkan pengesan tangan…";
+    $("cameraBtn").disabled = true;
+
+    if (!navigator.mediaDevices ||
+        !navigator.mediaDevices.getUserMedia) {
+      throw new Error("Kamera memerlukan HTTPS atau localhost.");
+    }
 
     if (!window.Hands) {
-      await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js");
-      await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js");
+      await loadScript(
+        "https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js"
+      );
     }
 
     const hands = new Hands({
-      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+      locateFile: (file) =>
+        `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
     });
 
     hands.setOptions({
@@ -147,8 +166,8 @@ async function enableCamera() {
     stream = await navigator.mediaDevices.getUserMedia({
       video: {
         facingMode: "user",
-        width: 640,
-        height: 480
+        width: { ideal: 640 },
+        height: { ideal: 480 }
       },
       audio: false
     });
@@ -156,33 +175,62 @@ async function enableCamera() {
     video.srcObject = stream;
     await video.play();
 
+    let running = true;
+
     const pump = async () => {
-      if (stream && video.readyState >= 2) {
-        await hands.send({ image: video });
+      if (!running || !stream) return;
+
+      try {
+        if (video.readyState >= 2) {
+          await hands.send({ image: video });
+        }
+      } catch (error) {
+        console.error("Ralat pengesanan tangan:", error);
       }
 
-      if (stream) {
+      if (running && stream) {
         requestAnimationFrame(pump);
       }
     };
 
+    // Simpan fungsi henti untuk butang Tutup Kamera.
+    handTask = () => {
+      running = false;
+      hands.close();
+    };
+
     pump();
 
-    $("gestureStatus").textContent =
-      "Kamera aktif! Bulatan merah ialah penunjuk jari. Cubit untuk ambil kad.";
+    gestureStatus.textContent =
+      "Kamera aktif! Cubit ibu jari dan telunjuk untuk mengambil kad.";
 
-  } catch (e) {
-    $("gestureStatus").textContent =
-      "Kamera tak dapat diaktifkan. Benarkan akses kamera atau gunakan tetikus.";
+  } catch (error) {
+    console.error("Ralat kamera:", error);
 
-    console.error(e);
+    gestureStatus.textContent =
+      "Kamera gagal diaktifkan. Semak kebenaran kamera dan sambungan HTTPS.";
+
+    if (stream) {
+      stream.getTracks().forEach(track => track.stop());
+      stream = null;
+    }
+
+    video.srcObject = null;
+    $("cameraBtn").disabled = false;
   }
 }
 
-const handPointer = $("handPointer"),
-      dropPointer = $("dropPointer");
-
-function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.crossOrigin="anonymous";s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
+function loadScript(src) {
+  return new Promise((resolve, reject) => {
+    const script = document.createElement("script");
+    script.src = src;
+    script.crossOrigin = "anonymous";
+    script.onload = resolve;
+    script.onerror = () =>
+      reject(new Error("Gagal memuatkan skrip: " + src));
+    document.head.appendChild(script);
+  });
+}
 
 let pinchState = false;
 let pinchStartFrames = 0;
