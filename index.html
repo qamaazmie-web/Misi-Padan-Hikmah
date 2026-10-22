@@ -119,7 +119,69 @@ updateStats()};
 $("nextBtn").onclick=()=>{if(index<questions.length-1){index++;loadQuestion()}else{stopMusic();sfx("win");$("finish").style.display="flex";$("finalText").textContent=`Kau mengumpul ${score} mata dan ${crystals} daripada 5 Kristal Hikmah. Teruskan berlatih peribahasa!`;started=false}};
 $("startBtn").onclick=startGame;$("introStart").onclick=startGame;$("replayBtn").onclick=startGame;
 let handTask=null,stream=null,video=$("camera"),pinching=false,dragging=null,lastHandX=0,lastHandY=0;const handPointer=$("handPointer"),dropPointer=$("dropPointer");
-async function enableCamera(){try{initAudio();$("cameraBox").style.display="flex";$("gestureStatus").textContent="Memuatkan pengesan tangan…";if(!window.Hands){await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js");await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js")}const hands=new Hands({locateFile:(file)=>`https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`});hands.setOptions({maxNumHands:1,modelComplexity:0,minDetectionConfidence:.55,minTrackingConfidence:.5});hands.onResults(onHands);stream=await navigator.mediaDevices.getUserMedia({video:{facingMode:"user",width:640,height:480},audio:false});video.srcObject=stream;await video.play();const pump=async()=>{if(stream&&video.readyState>=2)await hands.send({image:video});if(stream)requestAnimationFrame(pump)};pump();$("gestureStatus").textContent="Kamera aktif! Bulatan merah ialah penunjuk jari. Cubit untuk ambil kad."}catch(e){$("gestureStatus").textContent="Kamera tak dapat diaktifkan. Benarkan akses kamera atau gunakan tetikus.";console.error(e)}}
+
+async function enableCamera() {
+  try {
+    initAudio();
+    $("cameraBox").style.display = "flex";
+    $("gestureStatus").textContent = "Memuatkan pengesan tangan…";
+
+    if (!window.Hands) {
+      await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/hands/hands.js");
+      await loadScript("https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js");
+    }
+
+    const hands = new Hands({
+      locateFile: (file) => `https://cdn.jsdelivr.net/npm/@mediapipe/hands/${file}`
+    });
+
+    hands.setOptions({
+      maxNumHands: 1,
+      modelComplexity: 0,
+      minDetectionConfidence: 0.55,
+      minTrackingConfidence: 0.5
+    });
+
+    hands.onResults(onHands);
+
+    stream = await navigator.mediaDevices.getUserMedia({
+      video: {
+        facingMode: "user",
+        width: 640,
+        height: 480
+      },
+      audio: false
+    });
+
+    video.srcObject = stream;
+    await video.play();
+
+    const pump = async () => {
+      if (stream && video.readyState >= 2) {
+        await hands.send({ image: video });
+      }
+
+      if (stream) {
+        requestAnimationFrame(pump);
+      }
+    };
+
+    pump();
+
+    $("gestureStatus").textContent =
+      "Kamera aktif! Bulatan merah ialah penunjuk jari. Cubit untuk ambil kad.";
+
+  } catch (e) {
+    $("gestureStatus").textContent =
+      "Kamera tak dapat diaktifkan. Benarkan akses kamera atau gunakan tetikus.";
+
+    console.error(e);
+  }
+}
+
+const handPointer = $("handPointer"),
+      dropPointer = $("dropPointer");
+
 function loadScript(src){return new Promise((resolve,reject)=>{const s=document.createElement("script");s.src=src;s.crossOrigin="anonymous";s.onload=resolve;s.onerror=reject;document.head.appendChild(s)})}
 
 let pinchState = false;
@@ -320,7 +382,7 @@ function releasePinch() {
   dragging = null;
 }
 
-$("cameraBtn").onclick=enableCamera;$("stopCameraBtn").onclick=()=>{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;$("cameraBox").style.display="none";$("gestureStatus").textContent="Kamera ditutup.";handPointer.style.left="-100px";dropPointer.style.display="none";if(dragging)releasePinch()};
+$("cameraBtn").onclick=enableCamera;$("stopCameraBtn").onclick=()=>{if(stream){stream.getTracks().forEach(t=>t.stop());stream=null}video.srcObject=null;$("cameraBox").style.display="none";const gestureStatus = $("gestureStatus");.textContent="Kamera ditutup.";handPointer.style.left="-100px";dropPointer.style.display="none";if(dragging)releasePinch()};
 window.addEventListener("beforeunload",()=>{stopMusic();if(stream)stream.getTracks().forEach(t=>t.stop())});
 </script>
 </body>
