@@ -117,6 +117,11 @@ if(ok){answered=true;score+=20;crystals++;$("slot-proverb").classList.add("good"
 else{$("feedback").textContent="Belum tepat! Kad salah kembali ke tempat asal. Cuba pilih jawapan lain. 💪";$("feedback").className="feedback oops";sfx("bad");["proverb","lesson"].forEach(type=>{if(chosen[type]&&chosen[type].dataset.correct!=="yes"){chosen[type].classList.remove("used");chosen[type]=null;$("slot-"+type).textContent=type==="proverb"?"Letakkan kad peribahasa di sini":"Letakkan kad pengajaran di sini";$("slot-"+type).className="slot"}})}
 updateStats()};
 $("nextBtn").onclick=()=>{if(index<questions.length-1){index++;loadQuestion()}else{stopMusic();sfx("win");$("finish").style.display="flex";$("finalText").textContent=`Kau mengumpul ${score} mata dan ${crystals} daripada 5 Kristal Hikmah. Teruskan berlatih peribahasa!`;started=false}};
+  
+$("startBtn").onclick = startGame;
+$("introStart").onclick = startGame;
+$("replayBtn").onclick = startGame;
+
 let handTask = null;
 let stream = null;
 let video = $("camera");
